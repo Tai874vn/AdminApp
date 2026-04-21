@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:layout_marginHorizontal="4dp" android:layout_marginVertical="4dp"
+    android:clickable="true" android:focusable="true"
+    app:cardElevation="2dp" app:cardCornerRadius="8dp" app:rippleColor="?attr/colorControlHighlight">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="12dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="4dp">
+            <TextView android:id="@+id/tvProjectCode" android:layout_width="0dp"
+                android:layout_height="wrap_content" android:layout_weight="1"
+                android:textColor="?attr/colorPrimary" android:textSize="12sp" android:textStyle="bold" />
+
+            <ImageView android:id="@+id/ivSyncStatus"
+                android:layout_width="16dp" android:layout_height="16dp"
+                android:layout_marginEnd="8dp"
+                android:src="@android:drawable/stat_notify_sync"
+                android:contentDescription="Sync Status"
+                app:tint="?android:textColorSecondary" />
+
+            <com.google.android.material.chip.Chip android:id="@+id/chipStatus"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textSize="11sp" app:chipMinHeight="24dp" app:ensureMinTouchTargetSize="false" />
+        </LinearLayout>
+        <TextView android:id="@+id/tvProjectName" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:textSize="16sp" android:textStyle="bold"
+            android:layout_marginBottom="4dp" />
+        <TextView android:id="@+id/tvProjectManager" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:textColor="?android:textColorSecondary"
+            android:textSize="13sp" android:layout_marginBottom="4dp" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical">
+            <TextView android:id="@+id/tvDateRange" android:layout_width="0dp"
+                android:layout_height="wrap_content" android:layout_weight="1"
+                android:textColor="?android:textColorSecondary" android:textSize="12sp" />
+            <TextView android:id="@+id/tvBudget" android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:textColor="?attr/colorPrimary"
+                android:textSize="13sp" android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

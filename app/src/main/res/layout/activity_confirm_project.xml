@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+    <com.google.android.material.appbar.AppBarLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+        <com.google.android.material.appbar.MaterialToolbar android:id="@+id/toolbar"
+            android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary" android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar" />
+    </com.google.android.material.appbar.AppBarLayout>
+    <androidx.core.widget.NestedScrollView android:layout_width="match_parent" android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:padding="16dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Please review the project details below before saving."
+                android:textSize="14sp" android:textColor="?android:textColorSecondary" android:layout_marginBottom="16dp" />
+            <com.google.android.material.card.MaterialCardView android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginBottom="16dp"
+                app:cardElevation="2dp" app:cardCornerRadius="8dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="16dp">
+                    <TextView style="@style/ConfirmLabel" android:text="Project Code" />
+                    <TextView android:id="@+id/tvConfirmCode" style="@style/ConfirmValue" />
+                    <TextView style="@style/ConfirmLabel" android:text="Project Name" />
+                    <TextView android:id="@+id/tvConfirmName" style="@style/ConfirmValue" />
+                    <TextView style="@style/ConfirmLabel" android:text="Description" />
+                    <TextView android:id="@+id/tvConfirmDesc" style="@style/ConfirmValue" />
+                    <TextView style="@style/ConfirmLabel" android:text="Start Date" />
+                    <TextView android:id="@+id/tvConfirmStartDate" style="@style/ConfirmValue" />
+                    <TextView style="@style/ConfirmLabel" android:text="End Date" />
+                    <TextView android:id="@+id/tvConfirmEndDate" style="@style/ConfirmValue" />
+                    <TextView style="@style/ConfirmLabel" android:text="Project Manager" />
+                    <TextView android:id="@+id/tvConfirmManager" style="@style/ConfirmValue" />
+                    <TextView style="@style/ConfirmLabel" android:text="Status" />
+                    <TextView android:id="@+id/tvConfirmStatus" style="@style/ConfirmValue" />
+                    <TextView style="@style/ConfirmLabel" android:text="Budget" />
+                    <TextView android:id="@+id/tvConfirmBudget" style="@style/ConfirmValue" />
+                    <TextView style="@style/ConfirmLabel" android:text="Currency" />
+                    <TextView android:id="@+id/tvConfirmCurrency" style="@style/ConfirmValue" />
+                    <TextView style="@style/ConfirmLabel" android:text="Special Requirements" />
+                    <TextView android:id="@+id/tvConfirmSpecialReq" style="@style/ConfirmValue" />
+                    <TextView style="@style/ConfirmLabel" android:text="Client/Department" />
+                    <TextView android:id="@+id/tvConfirmClientDept" style="@style/ConfirmValue" />
+                    <TextView style="@style/ConfirmLabel" android:text="Priority" />
+                    <TextView android:id="@+id/tvConfirmPriority" style="@style/ConfirmValue" />
+                    <TextView style="@style/ConfirmLabel" android:text="Notes" />
+                    <TextView android:id="@+id/tvConfirmNotes" style="@style/ConfirmValue" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                <com.google.android.material.button.MaterialButton android:id="@+id/btnEdit"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:layout_marginEnd="8dp" android:text="Go Back" />
+                <com.google.android.material.button.MaterialButton android:id="@+id/btnConfirm"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:layout_marginStart="8dp" android:text="Confirm and Save" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

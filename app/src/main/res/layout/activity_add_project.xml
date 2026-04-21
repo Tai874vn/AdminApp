@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+            app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Required Fields" android:textColor="?attr/colorPrimary"
+                android:textSize="14sp" android:textStyle="bold" android:layout_marginBottom="8dp" />
+
+            <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilProjectCode"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp" android:hint="Project ID/Code *">
+                <com.google.android.material.textfield.TextInputEditText android:id="@+id/etProjectCode"
+                    android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilProjectName"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp" android:hint="Project Name *">
+                <com.google.android.material.textfield.TextInputEditText android:id="@+id/etProjectName"
+                    android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilProjectDesc"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp" android:hint="Project Description *">
+                <com.google.android.material.textfield.TextInputEditText android:id="@+id/etProjectDesc"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:inputType="textMultiLine" android:minLines="3" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:layout_marginBottom="8dp">
+                <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilStartDate"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:layout_marginEnd="4dp" android:hint="Start Date *">
+                    <com.google.android.material.textfield.TextInputEditText android:id="@+id/etStartDate"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:inputType="none" android:focusable="false" />
+                </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilEndDate"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:layout_marginStart="4dp" android:hint="End Date *">
+                    <com.google.android.material.textfield.TextInputEditText android:id="@+id/etEndDate"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:inputType="none" android:focusable="false" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilProjectManager"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp" android:hint="Project Manager/Owner *">
+                <com.google.android.material.textfield.TextInputEditText android:id="@+id/etProjectManager"
+                    android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textPersonName" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilStatus"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp" android:hint="Project Status *">
+                <AutoCompleteTextView android:id="@+id/spinnerStatus"
+                    android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="none" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:layout_marginBottom="16dp">
+                <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilBudget"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="2" android:layout_marginEnd="4dp" android:hint="Project Budget *">
+                    <com.google.android.material.textfield.TextInputEditText android:id="@+id/etBudget"
+                        android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="numberDecimal" />
+                </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilCurrency"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:layout_marginStart="4dp" android:hint="Currency *">
+                    <AutoCompleteTextView android:id="@+id/spinnerCurrency"
+                        android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="none" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Optional Fields" android:textColor="?android:textColorSecondary"
+                android:textSize="14sp" android:textStyle="bold" android:layout_marginBottom="8dp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp" android:hint="Special Requirements (e.g. Projector, Wi-Fi)">
+                <com.google.android.material.textfield.TextInputEditText android:id="@+id/etSpecialReq"
+                    android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp" android:hint="Client/Department Information">
+                <com.google.android.material.textfield.TextInputEditText android:id="@+id/etClientDept"
+                    android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp" android:hint="Priority Level">
+                <AutoCompleteTextView android:id="@+id/spinnerPriority"
+                    android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="none" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp" android:hint="Additional Notes">
+                <com.google.android.material.textfield.TextInputEditText android:id="@+id/etNotes"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:inputType="textMultiLine" android:minLines="2" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton android:id="@+id/btnNext"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="Review and Confirm" android:textSize="16sp" android:layout_marginBottom="16dp" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

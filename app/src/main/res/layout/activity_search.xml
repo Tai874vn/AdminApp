@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+    <com.google.android.material.appbar.AppBarLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+        <com.google.android.material.appbar.MaterialToolbar android:id="@+id/toolbar"
+            android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary" android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar" />
+    </com.google.android.material.appbar.AppBarLayout>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="vertical" app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_margin="16dp" android:hint="Search by name or description...">
+            <com.google.android.material.textfield.TextInputEditText android:id="@+id/etSearch"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:inputType="text" android:imeOptions="actionSearch" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.button.MaterialButton android:id="@+id/btnToggleAdvanced"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginStart="16dp" android:text="Advanced Search" />
+        <LinearLayout android:id="@+id/layoutAdvanced" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="vertical"
+            android:paddingHorizontal="16dp" android:visibility="gone">
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp" android:hint="Filter by date">
+                <com.google.android.material.textfield.TextInputEditText android:id="@+id/etSearchDate"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:inputType="none" android:focusable="false" />
+            </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp" android:hint="Filter by status">
+                <AutoCompleteTextView android:id="@+id/spinnerSearchStatus"
+                    android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="none" />
+            </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp" android:hint="Filter by owner/manager">
+                <com.google.android.material.textfield.TextInputEditText android:id="@+id/etSearchOwner"
+                    android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textPersonName" />
+            </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.button.MaterialButton android:id="@+id/btnAdvancedSearch"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp" android:text="Search" />
+        </LinearLayout>
+        <TextView android:id="@+id/tvResultCount" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:layout_marginStart="16dp"
+            android:layout_marginBottom="8dp" android:textColor="?android:textColorSecondary"
+            android:textSize="13sp" android:visibility="gone" />
+        <androidx.recyclerview.widget.RecyclerView android:id="@+id/rvSearchResults"
+            android:layout_width="match_parent" android:layout_height="0dp"
+            android:layout_weight="1" android:clipToPadding="false" android:padding="8dp" />
+        <TextView android:id="@+id/tvNoResults" android:layout_width="match_parent"
+            android:layout_height="0dp" android:layout_weight="1" android:gravity="center"
+            android:text="No matching projects found." android:textColor="?android:textColorSecondary"
+            android:textSize="15sp" android:visibility="gone" />
+    </LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
