@@ -20,6 +20,7 @@ import com.example.adminexpenseapp.adapters.ProjectAdapter
 import com.example.adminexpenseapp.database.DatabaseHelper
 import com.example.adminexpenseapp.models.Project
 import com.example.adminexpenseapp.utils.FirebaseSync
+import com.example.adminexpenseapp.utils.ErrorHandler
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
@@ -65,6 +66,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (savedInstanceState == null) {
+            // Fetch exchange rates on startup
+            com.example.adminexpenseapp.utils.CurrencyConverter.fetchRatesFromCloud(this)
+            // Fetch projects from cloud
             fetchFromCloud(showToast = false)
         }
     }
@@ -131,7 +135,7 @@ class MainActivity : AppCompatActivity() {
                 if (which == 0) {
                     ids.forEach { dbHelper.deleteProject(it) }
                     loadProjects()
-                    Toast.makeText(this, "Deleted locally", Toast.LENGTH_SHORT).show()
+                    ErrorHandler.showSuccess(this, ErrorHandler.Success.PROJECT_DELETED)
                 } else {
                     deleteFromCloud(ids)
                 }
@@ -146,12 +150,12 @@ class MainActivity : AppCompatActivity() {
         FirebaseSync.uploadProjects(this, selected, object : FirebaseSync.SyncCallback {
             override fun onSuccess(projectCount: Int, expenseCount: Int) {
                 swipeRefresh.isRefreshing = false
-                Toast.makeText(this@MainActivity, "Upload to database success!", Toast.LENGTH_SHORT).show()
+                ErrorHandler.showSuccess(this@MainActivity, ErrorHandler.Success.UPLOAD_SUCCESS)
                 loadProjects()
             }
-            override fun onFailure(err: String) { 
+            override fun onFailure(err: String) {
                 swipeRefresh.isRefreshing = false
-                Toast.makeText(this@MainActivity, err, Toast.LENGTH_SHORT).show() 
+                ErrorHandler.showError(this@MainActivity, err)
             }
         })
     }
@@ -161,11 +165,11 @@ class MainActivity : AppCompatActivity() {
         FirebaseSync.deleteProjectsFromCloud(this, ids, object : FirebaseSync.SyncCallback {
             override fun onSuccess(projectCount: Int, expenseCount: Int) {
                 fetchFromCloud(false)
-                Toast.makeText(this@MainActivity, "Deleted $projectCount from cloud", Toast.LENGTH_SHORT).show()
+                ErrorHandler.showSuccess(this@MainActivity, ErrorHandler.Success.deletedFromCloud(projectCount))
             }
-            override fun onFailure(err: String) { 
+            override fun onFailure(err: String) {
                 swipeRefresh.isRefreshing = false
-                Toast.makeText(this@MainActivity, err, Toast.LENGTH_SHORT).show() 
+                ErrorHandler.showError(this@MainActivity, err)
             }
         })
     }
@@ -190,14 +194,13 @@ class MainActivity : AppCompatActivity() {
                 swipeRefresh.isRefreshing = false
                 loadProjects()
                 if (showToast) {
-                    val msg = if (deletedLocally > 0) "Sync complete: $newProjects new, $updatedProjects updated, $deletedLocally deleted locally." 
-                             else "Sync complete."
-                    Toast.makeText(this@MainActivity, msg, Toast.LENGTH_SHORT).show()
+                    val msg = ErrorHandler.Success.syncComplete(newProjects, updatedProjects, deletedLocally)
+                    ErrorHandler.showSuccess(this@MainActivity, msg)
                 }
             }
-            override fun onFailure(err: String) { 
+            override fun onFailure(err: String) {
                 swipeRefresh.isRefreshing = false
-                if (showToast) Toast.makeText(this@MainActivity, err, Toast.LENGTH_SHORT).show() 
+                if (showToast) ErrorHandler.showError(this@MainActivity, err)
             }
         })
     }
@@ -211,12 +214,12 @@ class MainActivity : AppCompatActivity() {
                 FirebaseSync.uploadAll(this, object : FirebaseSync.SyncCallback {
                     override fun onSuccess(projectCount: Int, expenseCount: Int) {
                         swipeRefresh.isRefreshing = false
-                        Toast.makeText(this@MainActivity, "Upload to database success!", Toast.LENGTH_SHORT).show()
+                        ErrorHandler.showSuccess(this@MainActivity, ErrorHandler.Success.UPLOAD_SUCCESS)
                         loadProjects()
                     }
-                    override fun onFailure(err: String) { 
+                    override fun onFailure(err: String) {
                         swipeRefresh.isRefreshing = false
-                        Toast.makeText(this@MainActivity, err, Toast.LENGTH_SHORT).show() 
+                        ErrorHandler.showError(this@MainActivity, err)
                     }
                 })
             }

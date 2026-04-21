@@ -137,87 +137,193 @@ object FirebaseSync {
         val db = FirebaseFirestore.getInstance()
         val dbHelper = DatabaseHelper.getInstance(context)
 
+        // Temporarily disable FK constraints for sync
         dbHelper.setForeignKeysEnabled(false)
 
         db.collection(COLLECTION_PROJECTS).get(Source.SERVER)
             .addOnSuccessListener { projectSnapshots ->
-                val cloudIds = projectSnapshots.documents.map { it.id }.toSet()
-                val localProjects = dbHelper.getAllProjects()
-                var deletedCount = 0
-
-                for (local in localProjects) {
-                    if (local.id !in cloudIds && local.lastSyncAt > 0) {
-                        dbHelper.deleteProject(local.id)
-                        deletedCount++
-                    }
-                }
-
-                if (projectSnapshots.isEmpty) {
-                    dbHelper.setForeignKeysEnabled(true)
-                    callback.onFetchComplete(0, 0, deletedCount)
-                    return@addOnSuccessListener
-                }
-
-                var newCount = 0
-                var updateCount = 0
-                val syncTime = System.currentTimeMillis()
-                val totalProjects = projectSnapshots.size()
-                var completedProjects = 0
-
-                for (doc in projectSnapshots) {
-                    val cloudProject = mapToProject(doc.id, doc.data)
-                    val localProject = dbHelper.getProjectById(cloudProject.id)
-
-                    cloudProject.lastSyncAt = syncTime
-                    if (localProject == null) {
-                        dbHelper.insertProject(cloudProject)
-                        newCount++
-                    } else if (cloudProject.updatedAt > localProject.updatedAt) {
-                        dbHelper.updateProject(cloudProject)
-                        updateCount++
-                    } else {
-                        dbHelper.updateSyncTimestamp(cloudProject.id, syncTime)
-                    }
-
-                    doc.reference.collection(COLLECTION_EXPENSES).get(Source.SERVER)
-                        .addOnSuccessListener { expenseSnapshots ->
-                            val cloudExpIds = expenseSnapshots.documents.map { it.id }.toSet()
-                            val localExpenses = dbHelper.getExpensesByProjectId(cloudProject.id)
-                            
-                            for (localExp in localExpenses) {
-                                if (localExp.id !in cloudExpIds && localExp.lastSyncAt > 0) {
-                                    dbHelper.deleteExpense(localExp.id)
-                                }
-                            }
-
-                            for (expDoc in expenseSnapshots) {
-                                val cloudExp = mapToExpense(expDoc.id, expDoc.data)
-                                cloudExp.projectId = cloudProject.id
-                                cloudExp.lastSyncAt = syncTime
-                                // DatabaseHelper.insertExpense now uses CONFLICT_REPLACE (upsert)
-                                dbHelper.insertExpense(cloudExp)
-                            }
-                            
-                            completedProjects++
-                            if (completedProjects == totalProjects) {
-                                dbHelper.setForeignKeysEnabled(true)
-                                callback.onFetchComplete(newCount, updateCount, deletedCount)
-                            }
-                        }
-                        .addOnFailureListener {
-                            completedProjects++
-                            if (completedProjects == totalProjects) {
-                                dbHelper.setForeignKeysEnabled(true)
-                                callback.onFetchComplete(newCount, updateCount, deletedCount)
-                            }
-                        }
-                }
+                syncProjects(context, projectSnapshots, dbHelper, callback)
             }
-            .addOnFailureListener { e -> 
+            .addOnFailureListener { e ->
                 dbHelper.setForeignKeysEnabled(true)
-                callback.onFailure("Fetch failed: ${e.message}") 
+                callback.onFailure("Fetch failed: ${e.message}")
             }
     }
+
+    /**
+     * Syncs projects from cloud to local database.
+     * Step 1: Delete local projects that no longer exist in cloud.
+     * Step 2: Insert new or update existing projects.
+     * Step 3: Sync expenses for each project.
+     */
+    private fun syncProjects(
+        context: Context,
+        projectSnapshots: com.google.firebase.firestore.QuerySnapshot,
+        dbHelper: DatabaseHelper,
+        callback: FetchCallback
+    ) {
+        // Step 1: Remove locally synced projects that are deleted from cloud
+        val deletedCount = deleteRemovedProjects(projectSnapshots, dbHelper)
+
+        // Handle empty cloud database
+        if (projectSnapshots.isEmpty) {
+            dbHelper.setForeignKeysEnabled(true)
+            callback.onFetchComplete(0, 0, deletedCount)
+            return
+        }
+
+        // Step 2 & 3: Sync projects and their expenses
+        val syncTime = System.currentTimeMillis()
+        val syncStats = SyncStats(deletedCount = deletedCount)
+        val totalProjects = projectSnapshots.size()
+
+        for (doc in projectSnapshots) {
+            val cloudProject = mapToProject(doc.id, doc.data)
+
+            // Sync project to local DB
+            val wasInserted = syncProjectToLocal(cloudProject, syncTime, dbHelper)
+            if (wasInserted) syncStats.newCount++ else syncStats.updateCount++
+
+            // Sync expenses for this project
+            syncExpensesForProject(
+                doc.reference,
+                cloudProject.id,
+                syncTime,
+                dbHelper,
+                syncStats,
+                totalProjects,
+                callback
+            )
+        }
+    }
+
+    /**
+     * Deletes local projects that were previously synced but no longer exist in cloud.
+     * Returns count of deleted projects.
+     */
+    private fun deleteRemovedProjects(
+        projectSnapshots: com.google.firebase.firestore.QuerySnapshot,
+        dbHelper: DatabaseHelper
+    ): Int {
+        val cloudIds = projectSnapshots.documents.map { it.id }.toSet()
+        val localProjects = dbHelper.getAllProjects()
+        var deletedCount = 0
+
+        for (local in localProjects) {
+            // Only delete if it was previously synced (lastSyncAt > 0) and missing from cloud
+            if (local.id !in cloudIds && local.lastSyncAt > 0) {
+                dbHelper.deleteProject(local.id)
+                deletedCount++
+            }
+        }
+        return deletedCount
+    }
+
+    /**
+     * Syncs a single project to local database.
+     * Returns true if inserted (new), false if updated.
+     */
+    private fun syncProjectToLocal(
+        cloudProject: Project,
+        syncTime: Long,
+        dbHelper: DatabaseHelper
+    ): Boolean {
+        val localProject = dbHelper.getProjectById(cloudProject.id)
+        cloudProject.lastSyncAt = syncTime
+
+        return if (localProject == null) {
+            dbHelper.insertProject(cloudProject)
+            true  // New project inserted
+        } else if (cloudProject.updatedAt > localProject.updatedAt) {
+            dbHelper.updateProject(cloudProject)
+            false  // Existing project updated
+        } else {
+            dbHelper.updateSyncTimestamp(cloudProject.id, syncTime)
+            false  // No update needed, just timestamp
+        }
+    }
+
+    /**
+     * Syncs expenses for a specific project from cloud to local.
+     */
+    private fun syncExpensesForProject(
+        projectRef: com.google.firebase.firestore.DocumentReference,
+        projectId: String,
+        syncTime: Long,
+        dbHelper: DatabaseHelper,
+        syncStats: SyncStats,
+        totalProjects: Int,
+        callback: FetchCallback
+    ) {
+        projectRef.collection(COLLECTION_EXPENSES).get(Source.SERVER)
+            .addOnSuccessListener { expenseSnapshots ->
+                // Delete local expenses that were removed from cloud
+                deleteRemovedExpenses(expenseSnapshots, projectId, dbHelper)
+
+                // Insert or update expenses from cloud
+                for (expDoc in expenseSnapshots) {
+                    val cloudExp = mapToExpense(expDoc.id, expDoc.data)
+                    cloudExp.projectId = projectId
+                    cloudExp.lastSyncAt = syncTime
+                    dbHelper.insertExpense(cloudExp)  // Uses CONFLICT_REPLACE for upsert
+                }
+
+                // Check if all projects are synced
+                completeIfDone(syncStats, totalProjects, dbHelper, callback)
+            }
+            .addOnFailureListener {
+                // Still mark as completed even if expenses fail
+                completeIfDone(syncStats, totalProjects, dbHelper, callback)
+            }
+    }
+
+    /**
+     * Deletes local expenses that were previously synced but no longer exist in cloud.
+     */
+    private fun deleteRemovedExpenses(
+        expenseSnapshots: com.google.firebase.firestore.QuerySnapshot,
+        projectId: String,
+        dbHelper: DatabaseHelper
+    ) {
+        val cloudExpIds = expenseSnapshots.documents.map { it.id }.toSet()
+        val localExpenses = dbHelper.getExpensesByProjectId(projectId)
+
+        for (localExp in localExpenses) {
+            if (localExp.id !in cloudExpIds && localExp.lastSyncAt > 0) {
+                dbHelper.deleteExpense(localExp.id)
+            }
+        }
+    }
+
+    /**
+     * Checks if all projects have been processed and triggers callback.
+     */
+    private fun completeIfDone(
+        syncStats: SyncStats,
+        totalProjects: Int,
+        dbHelper: DatabaseHelper,
+        callback: FetchCallback
+    ) {
+        syncStats.completedProjects++
+        if (syncStats.completedProjects == totalProjects) {
+            dbHelper.setForeignKeysEnabled(true)  // Re-enable FK constraints
+            callback.onFetchComplete(
+                syncStats.newCount,
+                syncStats.updateCount,
+                syncStats.deletedCount
+            )
+        }
+    }
+
+    /**
+     * Data class to track sync statistics across async callbacks.
+     */
+    private class SyncStats(
+        var newCount: Int = 0,
+        var updateCount: Int = 0,
+        var deletedCount: Int = 0,
+        var completedProjects: Int = 0
+    )
 
     private fun mapToProject(id: String, data: Map<String, Any>): Project {
         return Project(

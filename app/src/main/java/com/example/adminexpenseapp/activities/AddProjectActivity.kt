@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.adminexpenseapp.R
 import com.example.adminexpenseapp.models.Project
+import com.example.adminexpenseapp.utils.ErrorHandler
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -130,27 +131,27 @@ class AddProjectActivity : AppCompatActivity() {
         val budgetStr = etBudget.text.toString().trim()
         val currency = spinnerCurrency.text.toString().trim()
 
-        if (code.isEmpty()) { tilProjectCode.error = "Please enter the project code"; isValid = false }
-        if (name.isEmpty()) { tilProjectName.error = "Please enter the project name"; isValid = false }
-        if (desc.isEmpty()) { tilProjectDesc.error = "Please enter the project description"; isValid = false }
-        if (startDate.isEmpty()) { tilStartDate.error = "Please select the start date"; isValid = false }
-        if (endDate.isEmpty()) { tilEndDate.error = "Please select the end date"; isValid = false }
-        if (manager.isEmpty()) { tilProjectManager.error = "Please enter the project manager"; isValid = false }
-        if (status.isEmpty()) { tilStatus.error = "Please select the project status"; isValid = false }
-        if (currency.isEmpty()) { tilCurrency.error = "Please select a currency"; isValid = false }
+        if (code.isEmpty()) { tilProjectCode.error = ErrorHandler.Validation.EMPTY_PROJECT_CODE; isValid = false }
+        if (name.isEmpty()) { tilProjectName.error = ErrorHandler.Validation.EMPTY_PROJECT_NAME; isValid = false }
+        if (desc.isEmpty()) { tilProjectDesc.error = ErrorHandler.Validation.EMPTY_PROJECT_DESC; isValid = false }
+        if (startDate.isEmpty()) { tilStartDate.error = ErrorHandler.Validation.EMPTY_START_DATE; isValid = false }
+        if (endDate.isEmpty()) { tilEndDate.error = ErrorHandler.Validation.EMPTY_END_DATE; isValid = false }
+        if (manager.isEmpty()) { tilProjectManager.error = ErrorHandler.Validation.EMPTY_PROJECT_MANAGER; isValid = false }
+        if (status.isEmpty()) { tilStatus.error = ErrorHandler.Validation.EMPTY_PROJECT_STATUS; isValid = false }
+        if (currency.isEmpty()) { tilCurrency.error = ErrorHandler.Validation.EMPTY_CURRENCY; isValid = false }
 
         var budget = 0.0
         if (budgetStr.isEmpty()) {
-            tilBudget.error = "Please enter the project budget"; isValid = false
+            tilBudget.error = ErrorHandler.Validation.EMPTY_BUDGET; isValid = false
         } else {
             budget = budgetStr.toDoubleOrNull() ?: run {
-                tilBudget.error = "Please enter a valid number"; isValid = false; 0.0
+                tilBudget.error = ErrorHandler.Validation.INVALID_BUDGET; isValid = false; 0.0
             }
-            if (budget < 0) { tilBudget.error = "Budget must be positive"; isValid = false }
+            if (budget < 0) { tilBudget.error = ErrorHandler.Validation.NEGATIVE_BUDGET; isValid = false }
         }
 
         if (!isValid) {
-            Toast.makeText(this, "Please fill in all required fields", Toast.LENGTH_SHORT).show()
+            ErrorHandler.showError(this, ErrorHandler.Validation.REQUIRED_FIELDS)
             return
         }
 
