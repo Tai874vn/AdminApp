@@ -66,9 +66,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (savedInstanceState == null) {
-            // Fetch exchange rates on startup
             com.example.adminexpenseapp.utils.CurrencyConverter.fetchRatesFromCloud(this)
-            // Fetch projects from cloud
             fetchFromCloud(showToast = false)
         }
     }
@@ -106,12 +104,17 @@ class MainActivity : AppCompatActivity() {
         override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean = false
         override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean = when (item.itemId) {
             R.id.action_sync_selected -> {
-                uploadSelected()
+                val selected = adapter.getSelectedProjects().toList()
+                uploadProjectsList(selected)
                 mode.finish()
                 true
             }
             R.id.action_delete_local_selected -> {
-                showDeleteSelectionDialog()
+                // Capture IDs before finishing mode to avoid empty selection
+                val selectedIds = adapter.getSelectedProjects().map { it.id }
+                if (selectedIds.isNotEmpty()) {
+                    showDeleteSelectionDialog(selectedIds)
+                }
                 mode.finish()
                 true
             }
@@ -123,15 +126,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showDeleteSelectionDialog() {
-        val selectedCount = adapter.getSelectedCount()
+    private fun showDeleteSelectionDialog(ids: List<String>) {
         val options = arrayOf("Delete from Phone (Locally)", "Delete from Cloud (Firebase)")
-        
         AlertDialog.Builder(this)
-            .setTitle("Delete $selectedCount Projects")
+            .setTitle("Delete ${ids.size} Projects")
             .setItems(options) { _, which ->
-                val projects = adapter.getSelectedProjects()
-                val ids = projects.map { it.id }
                 if (which == 0) {
                     ids.forEach { dbHelper.deleteProject(it) }
                     loadProjects()
@@ -144,11 +143,10 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun uploadSelected() {
-        val selected = adapter.getSelectedProjects()
+    private fun uploadProjectsList(projects: List<Project>) {
         swipeRefresh.isRefreshing = true
-        FirebaseSync.uploadProjects(this, selected, object : FirebaseSync.SyncCallback {
-            override fun onSuccess(projectCount: Int, expenseCount: Int) {
+        FirebaseSync.uploadProjects(this, projects, object : FirebaseSync.SyncCallback {
+            override fun onSuccess(pCount: Int, eCount: Int) {
                 swipeRefresh.isRefreshing = false
                 ErrorHandler.showSuccess(this@MainActivity, ErrorHandler.Success.UPLOAD_SUCCESS)
                 loadProjects()
@@ -163,9 +161,9 @@ class MainActivity : AppCompatActivity() {
     private fun deleteFromCloud(ids: List<String>) {
         swipeRefresh.isRefreshing = true
         FirebaseSync.deleteProjectsFromCloud(this, ids, object : FirebaseSync.SyncCallback {
-            override fun onSuccess(projectCount: Int, expenseCount: Int) {
+            override fun onSuccess(pCount: Int, eCount: Int) {
                 fetchFromCloud(false)
-                ErrorHandler.showSuccess(this@MainActivity, ErrorHandler.Success.deletedFromCloud(projectCount))
+                ErrorHandler.showSuccess(this@MainActivity, ErrorHandler.Success.deletedFromCloud(pCount))
             }
             override fun onFailure(err: String) {
                 swipeRefresh.isRefreshing = false
@@ -190,11 +188,11 @@ class MainActivity : AppCompatActivity() {
     private fun fetchFromCloud(showToast: Boolean) {
         swipeRefresh.isRefreshing = true
         FirebaseSync.fetchAll(this, object : FirebaseSync.FetchCallback {
-            override fun onFetchComplete(newProjects: Int, updatedProjects: Int, deletedLocally: Int) {
+            override fun onFetchComplete(n: Int, u: Int, d: Int) {
                 swipeRefresh.isRefreshing = false
                 loadProjects()
                 if (showToast) {
-                    val msg = ErrorHandler.Success.syncComplete(newProjects, updatedProjects, deletedLocally)
+                    val msg = ErrorHandler.Success.syncComplete(n, u, d)
                     ErrorHandler.showSuccess(this@MainActivity, msg)
                 }
             }
@@ -212,7 +210,7 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("Sync All") { _, _ ->
                 swipeRefresh.isRefreshing = true
                 FirebaseSync.uploadAll(this, object : FirebaseSync.SyncCallback {
-                    override fun onSuccess(projectCount: Int, expenseCount: Int) {
+                    override fun onSuccess(pCount: Int, eCount: Int) {
                         swipeRefresh.isRefreshing = false
                         ErrorHandler.showSuccess(this@MainActivity, ErrorHandler.Success.UPLOAD_SUCCESS)
                         loadProjects()
