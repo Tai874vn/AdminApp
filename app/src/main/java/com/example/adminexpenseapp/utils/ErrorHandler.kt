@@ -5,36 +5,20 @@ import android.widget.Toast
 import com.google.android.material.snackbar.Snackbar
 import android.view.View
 
-/**
- * Centralized error handling and user messaging utility.
- * Ensures consistent error messages and user feedback across the app.
- */
 object ErrorHandler {
 
-    /**
-     * Shows a short error toast message.
-     */
     fun showError(context: Context, message: String) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 
-    /**
-     * Shows a long error toast message.
-     */
     fun showErrorLong(context: Context, message: String) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
 
-    /**
-     * Shows a success toast message.
-     */
     fun showSuccess(context: Context, message: String) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 
-    /**
-     * Shows an error with a Snackbar (allows action button).
-     */
     fun showErrorWithAction(
         view: View,
         message: String,
@@ -48,14 +32,10 @@ object ErrorHandler {
         snackbar.show()
     }
 
-    /**
-     * Shows a success message with Snackbar.
-     */
     fun showSuccessSnackbar(view: View, message: String) {
         Snackbar.make(view, message, Snackbar.LENGTH_SHORT).show()
     }
 
-    // Validation error messages
     object Validation {
         const val EMPTY_PROJECT_CODE = "Please enter the project code"
         const val EMPTY_PROJECT_NAME = "Please enter the project name"
@@ -81,7 +61,6 @@ object ErrorHandler {
         const val EMPTY_PAYMENT_STATUS = "Please select the payment status"
     }
 
-    // Network error messages
     object Network {
         const val NO_CONNECTION = "No network connection"
         const val FETCH_FAILED = "Failed to fetch data from cloud"
@@ -90,7 +69,6 @@ object ErrorHandler {
         const val DELETE_FAILED = "Failed to delete from cloud"
     }
 
-    // Success messages
     object Success {
         const val PROJECT_SAVED = "Project saved successfully"
         const val PROJECT_UPDATED = "Project updated successfully"
@@ -115,7 +93,6 @@ object ErrorHandler {
         }
     }
 
-    // Database error messages
     object Database {
         const val SAVE_FAILED = "Failed to save to database"
         const val UPDATE_FAILED = "Failed to update database"

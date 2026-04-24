@@ -9,9 +9,6 @@ import com.example.adminexpenseapp.models.Project
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Source
 
-/**
- * Handles syncing local SQLite data with Firebase Firestore.
- */
 object FirebaseSync {
 
     private const val COLLECTION_PROJECTS = "projects"
@@ -79,7 +76,6 @@ object FirebaseSync {
         uploadProjects(context, dbHelper.getAllProjects(), callback)
     }
 
-    /** Optimized Delete: Fetches and deletes subcollections before the project itself */
     fun deleteProjectsFromCloud(context: Context, projectIds: List<String>, callback: SyncCallback) {
         if (!isNetworkAvailable(context)) {
             callback.onFailure("No network connection.")
@@ -98,16 +94,13 @@ object FirebaseSync {
         for (id in projectIds) {
             val projectRef = db.collection(COLLECTION_PROJECTS).document(id)
             
-            // 1. Find all expenses for this project in the cloud
             projectRef.collection(COLLECTION_EXPENSES).get().addOnSuccessListener { expenses ->
                 val batch = db.batch()
                 
-                // 2. Delete every expense document
                 for (expDoc in expenses) {
                     batch.delete(expDoc.reference)
                 }
                 
-                // 3. Delete the parent project document
                 batch.delete(projectRef)
                 
                 batch.commit().addOnSuccessListener {
@@ -117,7 +110,6 @@ object FirebaseSync {
                     }
                 }
             }.addOnFailureListener {
-                // Fail-safe: Try to delete the project even if expense fetch fails
                 projectRef.delete().addOnCompleteListener {
                     deletedProjects++
                     if (deletedProjects == totalToDelete) {
@@ -137,7 +129,6 @@ object FirebaseSync {
         val db = FirebaseFirestore.getInstance()
         val dbHelper = DatabaseHelper.getInstance(context)
 
-        // Temporarily disable FK constraints for sync
         dbHelper.setForeignKeysEnabled(false)
 
         db.collection(COLLECTION_PROJECTS).get(Source.SERVER)
@@ -150,29 +141,20 @@ object FirebaseSync {
             }
     }
 
-    /**
-     * Syncs projects from cloud to local database.
-     * Step 1: Delete local projects that no longer exist in cloud.
-     * Step 2: Insert new or update existing projects.
-     * Step 3: Sync expenses for each project.
-     */
     private fun syncProjects(
         context: Context,
         projectSnapshots: com.google.firebase.firestore.QuerySnapshot,
         dbHelper: DatabaseHelper,
         callback: FetchCallback
     ) {
-        // Step 1: Remove locally synced projects that are deleted from cloud
         val deletedCount = deleteRemovedProjects(projectSnapshots, dbHelper)
 
-        // Handle empty cloud database
         if (projectSnapshots.isEmpty) {
             dbHelper.setForeignKeysEnabled(true)
             callback.onFetchComplete(0, 0, deletedCount)
             return
         }
 
-        // Step 2 & 3: Sync projects and their expenses
         val syncTime = System.currentTimeMillis()
         val syncStats = SyncStats(deletedCount = deletedCount)
         val totalProjects = projectSnapshots.size()
@@ -180,11 +162,9 @@ object FirebaseSync {
         for (doc in projectSnapshots) {
             val cloudProject = mapToProject(doc.id, doc.data)
 
-            // Sync project to local DB
             val wasInserted = syncProjectToLocal(cloudProject, syncTime, dbHelper)
             if (wasInserted) syncStats.newCount++ else syncStats.updateCount++
 
-            // Sync expenses for this project
             syncExpensesForProject(
                 doc.reference,
                 cloudProject.id,
@@ -197,10 +177,6 @@ object FirebaseSync {
         }
     }
 
-    /**
-     * Deletes local projects that were previously synced but no longer exist in cloud.
-     * Returns count of deleted projects.
-     */
     private fun deleteRemovedProjects(
         projectSnapshots: com.google.firebase.firestore.QuerySnapshot,
         dbHelper: DatabaseHelper
@@ -210,7 +186,6 @@ object FirebaseSync {
         var deletedCount = 0
 
         for (local in localProjects) {
-            // Only delete if it was previously synced (lastSyncAt > 0) and missing from cloud
             if (local.id !in cloudIds && local.lastSyncAt > 0) {
                 dbHelper.deleteProject(local.id)
                 deletedCount++
@@ -219,10 +194,6 @@ object FirebaseSync {
         return deletedCount
     }
 
-    /**
-     * Syncs a single project to local database.
-     * Returns true if inserted (new), false if updated.
-     */
     private fun syncProjectToLocal(
         cloudProject: Project,
         syncTime: Long,
@@ -233,19 +204,16 @@ object FirebaseSync {
 
         return if (localProject == null) {
             dbHelper.insertProject(cloudProject)
-            true  // New project inserted
+            true
         } else if (cloudProject.updatedAt > localProject.updatedAt) {
             dbHelper.updateProject(cloudProject)
-            false  // Existing project updated
+            false
         } else {
             dbHelper.updateSyncTimestamp(cloudProject.id, syncTime)
-            false  // No update needed, just timestamp
+            false
         }
     }
 
-    /**
-     * Syncs expenses for a specific project from cloud to local.
-     */
     private fun syncExpensesForProject(
         projectRef: com.google.firebase.firestore.DocumentReference,
         projectId: String,
@@ -257,29 +225,22 @@ object FirebaseSync {
     ) {
         projectRef.collection(COLLECTION_EXPENSES).get(Source.SERVER)
             .addOnSuccessListener { expenseSnapshots ->
-                // Delete local expenses that were removed from cloud
                 deleteRemovedExpenses(expenseSnapshots, projectId, dbHelper)
 
-                // Insert or update expenses from cloud
                 for (expDoc in expenseSnapshots) {
                     val cloudExp = mapToExpense(expDoc.id, expDoc.data)
                     cloudExp.projectId = projectId
                     cloudExp.lastSyncAt = syncTime
-                    dbHelper.insertExpense(cloudExp)  // Uses CONFLICT_REPLACE for upsert
+                    dbHelper.insertExpense(cloudExp)
                 }
 
-                // Check if all projects are synced
                 completeIfDone(syncStats, totalProjects, dbHelper, callback)
             }
             .addOnFailureListener {
-                // Still mark as completed even if expenses fail
                 completeIfDone(syncStats, totalProjects, dbHelper, callback)
             }
     }
 
-    /**
-     * Deletes local expenses that were previously synced but no longer exist in cloud.
-     */
     private fun deleteRemovedExpenses(
         expenseSnapshots: com.google.firebase.firestore.QuerySnapshot,
         projectId: String,
@@ -295,9 +256,6 @@ object FirebaseSync {
         }
     }
 
-    /**
-     * Checks if all projects have been processed and triggers callback.
-     */
     private fun completeIfDone(
         syncStats: SyncStats,
         totalProjects: Int,
@@ -306,7 +264,7 @@ object FirebaseSync {
     ) {
         syncStats.completedProjects++
         if (syncStats.completedProjects == totalProjects) {
-            dbHelper.setForeignKeysEnabled(true)  // Re-enable FK constraints
+            dbHelper.setForeignKeysEnabled(true)
             callback.onFetchComplete(
                 syncStats.newCount,
                 syncStats.updateCount,
@@ -315,9 +273,6 @@ object FirebaseSync {
         }
     }
 
-    /**
-     * Data class to track sync statistics across async callbacks.
-     */
     private class SyncStats(
         var newCount: Int = 0,
         var updateCount: Int = 0,

@@ -67,7 +67,6 @@ class ConfirmProjectActivity : AppCompatActivity() {
                 saveProject()
             }
             override fun onFailure(errorMessage: String) {
-                // Proceed anyway if fetch fails (allow offline creation)
                 saveProject()
             }
         })

@@ -6,17 +6,17 @@ import java.util.UUID
 data class Expense(
     var id: String = UUID.randomUUID().toString(),
     var projectId: String = "",
-    var expenseId: String = "",        // User-defined expense code
+    var expenseId: String = "",
     var dateOfExpense: String = "",
     var amount: Double = 0.0,
     var currency: String = "",
     var expenseType: String = "",
     var paymentMethod: String = "",
     var claimant: String = "",
-    var paymentStatus: String = "",     // Paid, Pending, Reimbursed
-    var description: String = "",       // Optional
-    var location: String = "",          // Optional
-    var lastSyncAt: Long = 0,           // 0 means never synced
+    var paymentStatus: String = "",
+    var description: String = "",
+    var location: String = "",
+    var lastSyncAt: Long = 0,
     var createdAt: Long = System.currentTimeMillis(),
     var updatedAt: Long = System.currentTimeMillis()
 ) : Serializable {

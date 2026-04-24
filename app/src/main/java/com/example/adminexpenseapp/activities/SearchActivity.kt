@@ -72,7 +72,6 @@ class SearchActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         rvSearchResults.layoutManager = LinearLayoutManager(this)
-        // Fixed: Passed both onProjectClick and onProjectLongClick to ProjectAdapter
         adapter = ProjectAdapter(
             onProjectClick = { project ->
                 val intent = Intent(this, ProjectDetailActivity::class.java)
@@ -80,7 +79,6 @@ class SearchActivity : AppCompatActivity() {
                 startActivity(intent)
             },
             onProjectLongClick = { _ ->
-                // Long click selection not handled in SearchActivity
             }
         )
         rvSearchResults.adapter = adapter

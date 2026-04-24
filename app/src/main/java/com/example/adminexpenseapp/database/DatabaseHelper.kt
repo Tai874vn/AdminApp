@@ -10,330 +10,330 @@ import com.example.adminexpenseapp.models.Project
 import com.example.adminexpenseapp.utils.CurrencyConverter
 
 class DatabaseHelper private constructor(context: Context) :
-    SQLiteOpenHelper(context.applicationContext, DATABASE_NAME, null, DATABASE_VERSION) {
+    SQLiteOpenHelper(context.applicationContext, DB_FILE_NAME, null, DB_VERSION_NUMBER) {
 
     companion object {
-        private const val DATABASE_NAME = "expense_tracker.db"
-        private const val DATABASE_VERSION = 5
+        private const val DB_FILE_NAME = "expense_tracker.db"
+        private const val DB_VERSION_NUMBER = 5
 
-        private const val TABLE_PROJECTS = "projects"
-        private const val COL_ID = "id"
-        private const val COL_CODE = "project_code"
-        private const val COL_NAME = "project_name"
-        private const val COL_DESC = "project_description"
-        private const val COL_START = "start_date"
-        private const val COL_END = "end_date"
-        private const val COL_MANAGER = "project_manager"
-        private const val COL_STATUS = "project_status"
-        private const val COL_BUDGET = "project_budget"
-        private const val COL_CURRENCY = "currency"
-        private const val COL_SPECIAL = "special_requirements"
-        private const val COL_CLIENT = "client_department"
-        private const val COL_PRIORITY = "priority"
-        private const val COL_NOTES = "notes"
-        private const val COL_SYNC = "last_sync_at"
-        private const val COL_CREATED = "created_at"
-        private const val COL_UPDATED = "updated_at"
+        private const val TBL_PROJECTS = "projects"
+        private const val FLD_ID = "id"
+        private const val FLD_CODE = "project_code"
+        private const val FLD_NAME = "project_name"
+        private const val FLD_DESC = "project_description"
+        private const val FLD_START = "start_date"
+        private const val FLD_END = "end_date"
+        private const val FLD_MANAGER = "project_manager"
+        private const val FLD_STATUS = "project_status"
+        private const val FLD_BUDGET = "project_budget"
+        private const val FLD_CURRENCY = "currency"
+        private const val FLD_SPECIAL = "special_requirements"
+        private const val FLD_CLIENT = "client_department"
+        private const val FLD_PRIORITY = "priority"
+        private const val FLD_NOTES = "notes"
+        private const val FLD_SYNC = "last_sync_at"
+        private const val FLD_CREATED = "created_at"
+        private const val FLD_UPDATED = "updated_at"
 
-        private const val TABLE_EXPENSES = "expenses"
-        private const val COL_EXP_ID = "id"
-        private const val COL_EXP_PROJECT = "project_id"
-        private const val COL_EXP_CODE = "expense_id"
-        private const val COL_EXP_DATE = "date_of_expense"
-        private const val COL_EXP_AMOUNT = "amount"
-        private const val COL_EXP_CURRENCY = "currency"
-        private const val COL_EXP_TYPE = "expense_type"
-        private const val COL_EXP_METHOD = "payment_method"
-        private const val COL_EXP_CLAIMANT = "claimant"
-        private const val COL_EXP_STATUS = "payment_status"
-        private const val COL_EXP_DESC = "description"
-        private const val COL_EXP_LOCATION = "location"
-        private const val COL_EXP_SYNC = "last_sync_at"
-        private const val COL_EXP_CREATED = "created_at"
-        private const val COL_EXP_UPDATED = "updated_at"
+        private const val TBL_EXPENSES = "expenses"
+        private const val FLD_EXP_ID = "id"
+        private const val FLD_EXP_PROJECT = "project_id"
+        private const val FLD_EXP_CODE = "expense_id"
+        private const val FLD_EXP_DATE = "date_of_expense"
+        private const val FLD_EXP_AMOUNT = "amount"
+        private const val FLD_EXP_CURRENCY = "currency"
+        private const val FLD_EXP_TYPE = "expense_type"
+        private const val FLD_EXP_METHOD = "payment_method"
+        private const val FLD_EXP_CLAIMANT = "claimant"
+        private const val FLD_EXP_STATUS = "payment_status"
+        private const val FLD_EXP_DESC = "description"
+        private const val FLD_EXP_LOCATION = "location"
+        private const val FLD_EXP_SYNC = "last_sync_at"
+        private const val FLD_EXP_CREATED = "created_at"
+        private const val FLD_EXP_UPDATED = "updated_at"
 
         @Volatile
-        private var instance: DatabaseHelper? = null
+        private var dbProvider: DatabaseHelper? = null
 
-        fun getInstance(context: Context): DatabaseHelper =
-            instance ?: synchronized(this) {
-                instance ?: DatabaseHelper(context).also { instance = it }
+        fun getInstance(ctx: Context): DatabaseHelper =
+            dbProvider ?: synchronized(this) {
+                dbProvider ?: DatabaseHelper(ctx).also { dbProvider = it }
             }
     }
 
-    override fun onCreate(db: SQLiteDatabase) {
-        db.execSQL("""
-            CREATE TABLE $TABLE_PROJECTS (
-                $COL_ID TEXT PRIMARY KEY,
-                $COL_CODE TEXT NOT NULL,
-                $COL_NAME TEXT NOT NULL,
-                $COL_DESC TEXT NOT NULL,
-                $COL_START TEXT NOT NULL,
-                $COL_END TEXT NOT NULL,
-                $COL_MANAGER TEXT NOT NULL,
-                $COL_STATUS TEXT NOT NULL,
-                $COL_BUDGET REAL NOT NULL,
-                $COL_CURRENCY TEXT NOT NULL DEFAULT 'USD',
-                $COL_SPECIAL TEXT,
-                $COL_CLIENT TEXT,
-                $COL_PRIORITY TEXT,
-                $COL_NOTES TEXT,
-                $COL_SYNC INTEGER DEFAULT 0,
-                $COL_CREATED INTEGER,
-                $COL_UPDATED INTEGER
+    override fun onCreate(sqlDb: SQLiteDatabase) {
+        sqlDb.execSQL("""
+            CREATE TABLE $TBL_PROJECTS (
+                $FLD_ID TEXT PRIMARY KEY,
+                $FLD_CODE TEXT NOT NULL,
+                $FLD_NAME TEXT NOT NULL,
+                $FLD_DESC TEXT NOT NULL,
+                $FLD_START TEXT NOT NULL,
+                $FLD_END TEXT NOT NULL,
+                $FLD_MANAGER TEXT NOT NULL,
+                $FLD_STATUS TEXT NOT NULL,
+                $FLD_BUDGET REAL NOT NULL,
+                $FLD_CURRENCY TEXT NOT NULL DEFAULT 'USD',
+                $FLD_SPECIAL TEXT,
+                $FLD_CLIENT TEXT,
+                $FLD_PRIORITY TEXT,
+                $FLD_NOTES TEXT,
+                $FLD_SYNC INTEGER DEFAULT 0,
+                $FLD_CREATED INTEGER,
+                $FLD_UPDATED INTEGER
             )
         """)
 
-        db.execSQL("""
-            CREATE TABLE $TABLE_EXPENSES (
-                $COL_EXP_ID TEXT PRIMARY KEY,
-                $COL_EXP_PROJECT TEXT NOT NULL,
-                $COL_EXP_CODE TEXT NOT NULL,
-                $COL_EXP_DATE TEXT NOT NULL,
-                $COL_EXP_AMOUNT REAL NOT NULL,
-                $COL_EXP_CURRENCY TEXT NOT NULL,
-                $COL_EXP_TYPE TEXT NOT NULL,
-                $COL_EXP_METHOD TEXT NOT NULL,
-                $COL_EXP_CLAIMANT TEXT NOT NULL,
-                $COL_EXP_STATUS TEXT NOT NULL,
-                $COL_EXP_DESC TEXT,
-                $COL_EXP_LOCATION TEXT,
-                $COL_EXP_SYNC INTEGER DEFAULT 0,
-                $COL_EXP_CREATED INTEGER,
-                $COL_EXP_UPDATED INTEGER,
-                FOREIGN KEY($COL_EXP_PROJECT) REFERENCES $TABLE_PROJECTS($COL_ID) ON DELETE CASCADE
+        sqlDb.execSQL("""
+            CREATE TABLE $TBL_EXPENSES (
+                $FLD_EXP_ID TEXT PRIMARY KEY,
+                $FLD_EXP_PROJECT TEXT NOT NULL,
+                $FLD_EXP_CODE TEXT NOT NULL,
+                $FLD_EXP_DATE TEXT NOT NULL,
+                $FLD_EXP_AMOUNT REAL NOT NULL,
+                $FLD_EXP_CURRENCY TEXT NOT NULL,
+                $FLD_EXP_TYPE TEXT NOT NULL,
+                $FLD_EXP_METHOD TEXT NOT NULL,
+                $FLD_EXP_CLAIMANT TEXT NOT NULL,
+                $FLD_EXP_STATUS TEXT NOT NULL,
+                $FLD_EXP_DESC TEXT,
+                $FLD_EXP_LOCATION TEXT,
+                $FLD_EXP_SYNC INTEGER DEFAULT 0,
+                $FLD_EXP_CREATED INTEGER,
+                $FLD_EXP_UPDATED INTEGER,
+                FOREIGN KEY($FLD_EXP_PROJECT) REFERENCES $TBL_PROJECTS($FLD_ID) ON DELETE CASCADE
             )
         """)
     }
 
-    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        db.execSQL("DROP TABLE IF EXISTS $TABLE_EXPENSES")
-        db.execSQL("DROP TABLE IF EXISTS $TABLE_PROJECTS")
-        onCreate(db)
+    override fun onUpgrade(sqlDb: SQLiteDatabase, oldVer: Int, newVer: Int) {
+        sqlDb.execSQL("DROP TABLE IF EXISTS $TBL_EXPENSES")
+        sqlDb.execSQL("DROP TABLE IF EXISTS $TBL_PROJECTS")
+        onCreate(sqlDb)
     }
 
-    override fun onOpen(db: SQLiteDatabase) {
-        super.onOpen(db)
-        db.execSQL("PRAGMA foreign_keys=ON;")
+    override fun onOpen(sqlDb: SQLiteDatabase) {
+        super.onOpen(sqlDb)
+        sqlDb.execSQL("PRAGMA foreign_keys=ON;")
     }
 
     /** Helper to temporarily disable FK checks during sync to avoid crashes */
-    fun setForeignKeysEnabled(enabled: Boolean) {
-        writableDatabase.execSQL("PRAGMA foreign_keys = ${if (enabled) "ON" else "OFF"};")
+    fun setForeignKeysEnabled(isAllowed: Boolean) {
+        writableDatabase.execSQL("PRAGMA foreign_keys = ${if (isAllowed) "ON" else "OFF"};")
     }
 
-    fun insertProject(project: Project): String {
+    fun insertProject(proj: Project): String {
         val db = writableDatabase
-        val values = ContentValues().apply {
-            put(COL_ID, project.id)
-            put(COL_CODE, project.projectCode)
-            put(COL_NAME, project.projectName)
-            put(COL_DESC, project.projectDescription)
-            put(COL_START, project.startDate)
-            put(COL_END, project.endDate)
-            put(COL_MANAGER, project.projectManager)
-            put(COL_STATUS, project.projectStatus)
-            put(COL_BUDGET, project.projectBudget)
-            put(COL_CURRENCY, project.currency)
-            put(COL_SPECIAL, project.specialRequirements)
-            put(COL_CLIENT, project.clientDepartment)
-            put(COL_PRIORITY, project.priority)
-            put(COL_NOTES, project.notes)
-            put(COL_SYNC, project.lastSyncAt)
-            put(COL_CREATED, project.createdAt)
-            put(COL_UPDATED, project.updatedAt)
+        val content = ContentValues().apply {
+            put(FLD_ID, proj.id)
+            put(FLD_CODE, proj.projectCode)
+            put(FLD_NAME, proj.projectName)
+            put(FLD_DESC, proj.projectDescription)
+            put(FLD_START, proj.startDate)
+            put(FLD_END, proj.endDate)
+            put(FLD_MANAGER, proj.projectManager)
+            put(FLD_STATUS, proj.projectStatus)
+            put(FLD_BUDGET, proj.projectBudget)
+            put(FLD_CURRENCY, proj.currency)
+            put(FLD_SPECIAL, proj.specialRequirements)
+            put(FLD_CLIENT, proj.clientDepartment)
+            put(FLD_PRIORITY, proj.priority)
+            put(FLD_NOTES, proj.notes)
+            put(FLD_SYNC, proj.lastSyncAt)
+            put(FLD_CREATED, proj.createdAt)
+            put(FLD_UPDATED, proj.updatedAt)
         }
-        db.insertWithOnConflict(TABLE_PROJECTS, null, values, SQLiteDatabase.CONFLICT_REPLACE)
-        return project.id
+        db.insertWithOnConflict(TBL_PROJECTS, null, content, SQLiteDatabase.CONFLICT_REPLACE)
+        return proj.id
     }
 
-    fun updateProject(project: Project): Int {
+    fun updateProject(proj: Project): Int {
         val db = writableDatabase
-        val values = ContentValues().apply {
-            put(COL_CODE, project.projectCode)
-            put(COL_NAME, project.projectName)
-            put(COL_DESC, project.projectDescription)
-            put(COL_START, project.startDate)
-            put(COL_END, project.endDate)
-            put(COL_MANAGER, project.projectManager)
-            put(COL_STATUS, project.projectStatus)
-            put(COL_BUDGET, project.projectBudget)
-            put(COL_CURRENCY, project.currency)
-            put(COL_SPECIAL, project.specialRequirements)
-            put(COL_CLIENT, project.clientDepartment)
-            put(COL_PRIORITY, project.priority)
-            put(COL_NOTES, project.notes)
-            put(COL_SYNC, project.lastSyncAt)
-            put(COL_UPDATED, System.currentTimeMillis())
+        val content = ContentValues().apply {
+            put(FLD_CODE, proj.projectCode)
+            put(FLD_NAME, proj.projectName)
+            put(FLD_DESC, proj.projectDescription)
+            put(FLD_START, proj.startDate)
+            put(FLD_END, proj.endDate)
+            put(FLD_MANAGER, proj.projectManager)
+            put(FLD_STATUS, proj.projectStatus)
+            put(FLD_BUDGET, proj.projectBudget)
+            put(FLD_CURRENCY, proj.currency)
+            put(FLD_SPECIAL, proj.specialRequirements)
+            put(FLD_CLIENT, proj.clientDepartment)
+            put(FLD_PRIORITY, proj.priority)
+            put(FLD_NOTES, proj.notes)
+            put(FLD_SYNC, proj.lastSyncAt)
+            put(FLD_UPDATED, System.currentTimeMillis())
         }
-        return db.update(TABLE_PROJECTS, values, "$COL_ID = ?", arrayOf(project.id))
+        return db.update(TBL_PROJECTS, content, "$FLD_ID = ?", arrayOf(proj.id))
     }
 
-    fun deleteProject(projectId: String): Boolean {
+    fun deleteProject(projId: String): Boolean {
         val db = writableDatabase
-        return db.delete(TABLE_PROJECTS, "$COL_ID = ?", arrayOf(projectId)) > 0
+        return db.delete(TBL_PROJECTS, "$FLD_ID = ?", arrayOf(projId)) > 0
     }
 
-    fun getProjectById(id: String): Project? {
+    fun getProjectById(projId: String): Project? {
         val db = readableDatabase
-        val cursor = db.query(TABLE_PROJECTS, null, "$COL_ID = ?", arrayOf(id), null, null, null)
-        return cursor.use { if (it.moveToFirst()) cursorToProject(it) else null }
+        val res = db.query(TBL_PROJECTS, null, "$FLD_ID = ?", arrayOf(projId), null, null, null)
+        return res.use { if (it.moveToFirst()) mapToProject(it) else null }
     }
 
     fun getAllProjects(): List<Project> {
-        val projects = mutableListOf<Project>()
+        val list = mutableListOf<Project>()
         val db = readableDatabase
-        val cursor = db.query(TABLE_PROJECTS, null, null, null, null, null, "$COL_UPDATED DESC")
-        cursor.use { while (it.moveToNext()) projects.add(cursorToProject(it)) }
-        return projects
+        val res = db.query(TBL_PROJECTS, null, null, null, null, null, "$FLD_UPDATED DESC")
+        res.use { while (it.moveToNext()) list.add(mapToProject(it)) }
+        return list
     }
 
-    fun searchProjects(query: String): List<Project> {
-        val projects = mutableListOf<Project>()
+    fun searchProjects(term: String): List<Project> {
+        val list = mutableListOf<Project>()
         val db = readableDatabase
-        val cursor = db.query(TABLE_PROJECTS, null, "$COL_NAME LIKE ? OR $COL_DESC LIKE ?", arrayOf("%$query%", "%$query%"), null, null, "$COL_UPDATED DESC")
-        cursor.use { while (it.moveToNext()) projects.add(cursorToProject(it)) }
-        return projects
+        val res = db.query(TBL_PROJECTS, null, "$FLD_NAME LIKE ? OR $FLD_DESC LIKE ?", arrayOf("%$term%", "%$term%"), null, null, "$FLD_UPDATED DESC")
+        res.use { while (it.moveToNext()) list.add(mapToProject(it)) }
+        return list
     }
 
-    fun advancedSearchProjects(date: String?, status: String?, owner: String?): List<Project> {
-        val projects = mutableListOf<Project>()
+    fun advancedSearchProjects(date: String?, status: String?, manager: String?): List<Project> {
+        val list = mutableListOf<Project>()
         val db = readableDatabase
-        val selection = StringBuilder("1=1")
-        val args = mutableListOf<String>()
-        if (!date.isNullOrBlank()) { selection.append(" AND ($COL_START LIKE ? OR $COL_END LIKE ?)"); args.add("%$date%"); args.add("%$date%") }
-        if (!status.isNullOrBlank()) { selection.append(" AND $COL_STATUS = ?"); args.add(status) }
-        if (!owner.isNullOrBlank()) { selection.append(" AND $COL_MANAGER LIKE ?"); args.add("%$owner%") }
-        val cursor = db.query(TABLE_PROJECTS, null, selection.toString(), args.toTypedArray(), null, null, "$COL_UPDATED DESC")
-        cursor.use { while (it.moveToNext()) projects.add(cursorToProject(it)) }
-        return projects
+        val query = StringBuilder("1=1")
+        val params = mutableListOf<String>()
+        if (!date.isNullOrBlank()) { query.append(" AND ($FLD_START LIKE ? OR $FLD_END LIKE ?)"); params.add("%$date%"); params.add("%$date%") }
+        if (!status.isNullOrBlank()) { query.append(" AND $FLD_STATUS = ?"); params.add(status) }
+        if (!manager.isNullOrBlank()) { query.append(" AND $FLD_MANAGER LIKE ?"); params.add("%$manager%") }
+        val res = db.query(TBL_PROJECTS, null, query.toString(), params.toTypedArray(), null, null, "$FLD_UPDATED DESC")
+        res.use { while (it.moveToNext()) list.add(mapToProject(it)) }
+        return list
     }
 
-    fun updateSyncTimestamp(projectId: String, timestamp: Long) {
+    fun updateSyncTimestamp(projId: String, time: Long) {
         val db = writableDatabase
-        val values = ContentValues().apply { put(COL_SYNC, timestamp) }
-        db.update(TABLE_PROJECTS, values, "$COL_ID = ?", arrayOf(projectId))
+        val content = ContentValues().apply { put(FLD_SYNC, time) }
+        db.update(TBL_PROJECTS, content, "$FLD_ID = ?", arrayOf(projId))
     }
 
     fun resetDatabase() {
         val db = writableDatabase
-        db.execSQL("DELETE FROM $TABLE_EXPENSES")
-        db.execSQL("DELETE FROM $TABLE_PROJECTS")
+        db.execSQL("DELETE FROM $TBL_EXPENSES")
+        db.execSQL("DELETE FROM $TBL_PROJECTS")
     }
 
-    private fun cursorToProject(cursor: Cursor): Project = Project(
-        id = cursor.getString(cursor.getColumnIndexOrThrow(COL_ID)),
-        projectCode = cursor.getString(cursor.getColumnIndexOrThrow(COL_CODE)),
-        projectName = cursor.getString(cursor.getColumnIndexOrThrow(COL_NAME)),
-        projectDescription = cursor.getString(cursor.getColumnIndexOrThrow(COL_DESC)),
-        startDate = cursor.getString(cursor.getColumnIndexOrThrow(COL_START)),
-        endDate = cursor.getString(cursor.getColumnIndexOrThrow(COL_END)),
-        projectManager = cursor.getString(cursor.getColumnIndexOrThrow(COL_MANAGER)),
-        projectStatus = cursor.getString(cursor.getColumnIndexOrThrow(COL_STATUS)),
-        projectBudget = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_BUDGET)),
-        currency = cursor.getString(cursor.getColumnIndexOrThrow(COL_CURRENCY)),
-        specialRequirements = cursor.getString(cursor.getColumnIndexOrThrow(COL_SPECIAL)) ?: "",
-        clientDepartment = cursor.getString(cursor.getColumnIndexOrThrow(COL_CLIENT)) ?: "",
-        priority = cursor.getString(cursor.getColumnIndexOrThrow(COL_PRIORITY)) ?: "",
-        notes = cursor.getString(cursor.getColumnIndexOrThrow(COL_NOTES)) ?: "",
-        lastSyncAt = cursor.getLong(cursor.getColumnIndexOrThrow(COL_SYNC)),
-        createdAt = cursor.getLong(cursor.getColumnIndexOrThrow(COL_CREATED)),
-        updatedAt = cursor.getLong(cursor.getColumnIndexOrThrow(COL_UPDATED))
+    private fun mapToProject(row: Cursor): Project = Project(
+        id = row.getString(row.getColumnIndexOrThrow(FLD_ID)),
+        projectCode = row.getString(row.getColumnIndexOrThrow(FLD_CODE)),
+        projectName = row.getString(row.getColumnIndexOrThrow(FLD_NAME)),
+        projectDescription = row.getString(row.getColumnIndexOrThrow(FLD_DESC)),
+        startDate = row.getString(row.getColumnIndexOrThrow(FLD_START)),
+        endDate = row.getString(row.getColumnIndexOrThrow(FLD_END)),
+        projectManager = row.getString(row.getColumnIndexOrThrow(FLD_MANAGER)),
+        projectStatus = row.getString(row.getColumnIndexOrThrow(FLD_STATUS)),
+        projectBudget = row.getDouble(row.getColumnIndexOrThrow(FLD_BUDGET)),
+        currency = row.getString(row.getColumnIndexOrThrow(FLD_CURRENCY)),
+        specialRequirements = row.getString(row.getColumnIndexOrThrow(FLD_SPECIAL)) ?: "",
+        clientDepartment = row.getString(row.getColumnIndexOrThrow(FLD_CLIENT)) ?: "",
+        priority = row.getString(row.getColumnIndexOrThrow(FLD_PRIORITY)) ?: "",
+        notes = row.getString(row.getColumnIndexOrThrow(FLD_NOTES)) ?: "",
+        lastSyncAt = row.getLong(row.getColumnIndexOrThrow(FLD_SYNC)),
+        createdAt = row.getLong(row.getColumnIndexOrThrow(FLD_CREATED)),
+        updatedAt = row.getLong(row.getColumnIndexOrThrow(FLD_UPDATED))
     )
 
-    fun insertExpense(expense: Expense): String {
+    fun insertExpense(exp: Expense): String {
         val db = writableDatabase
-        val values = ContentValues().apply {
-            put(COL_EXP_ID, expense.id)
-            put(COL_EXP_PROJECT, expense.projectId)
-            put(COL_EXP_CODE, expense.expenseId)
-            put(COL_EXP_DATE, expense.dateOfExpense)
-            put(COL_EXP_AMOUNT, expense.amount)
-            put(COL_EXP_CURRENCY, expense.currency)
-            put(COL_EXP_TYPE, expense.expenseType)
-            put(COL_EXP_METHOD, expense.paymentMethod)
-            put(COL_EXP_CLAIMANT, expense.claimant)
-            put(COL_EXP_STATUS, expense.paymentStatus)
-            put(COL_EXP_DESC, expense.description)
-            put(COL_EXP_LOCATION, expense.location)
-            put(COL_EXP_SYNC, expense.lastSyncAt)
-            put(COL_EXP_CREATED, expense.createdAt)
-            put(COL_EXP_UPDATED, expense.updatedAt)
+        val content = ContentValues().apply {
+            put(FLD_EXP_ID, exp.id)
+            put(FLD_EXP_PROJECT, exp.projectId)
+            put(FLD_EXP_CODE, exp.expenseId)
+            put(FLD_EXP_DATE, exp.dateOfExpense)
+            put(FLD_EXP_AMOUNT, exp.amount)
+            put(FLD_EXP_CURRENCY, exp.currency)
+            put(FLD_EXP_TYPE, exp.expenseType)
+            put(FLD_EXP_METHOD, exp.paymentMethod)
+            put(FLD_EXP_CLAIMANT, exp.claimant)
+            put(FLD_EXP_STATUS, exp.paymentStatus)
+            put(FLD_EXP_DESC, exp.description)
+            put(FLD_EXP_LOCATION, exp.location)
+            put(FLD_EXP_SYNC, exp.lastSyncAt)
+            put(FLD_EXP_CREATED, exp.createdAt)
+            put(FLD_EXP_UPDATED, exp.updatedAt)
         }
-        db.insertWithOnConflict(TABLE_EXPENSES, null, values, SQLiteDatabase.CONFLICT_REPLACE)
-        return expense.id
+        db.insertWithOnConflict(TBL_EXPENSES, null, content, SQLiteDatabase.CONFLICT_REPLACE)
+        return exp.id
     }
 
-    fun updateExpense(expense: Expense): Int {
+    fun updateExpense(exp: Expense): Int {
         val db = writableDatabase
-        val values = ContentValues().apply {
-            put(COL_EXP_CODE, expense.expenseId)
-            put(COL_EXP_DATE, expense.dateOfExpense)
-            put(COL_EXP_AMOUNT, expense.amount)
-            put(COL_EXP_CURRENCY, expense.currency)
-            put(COL_EXP_TYPE, expense.expenseType)
-            put(COL_EXP_METHOD, expense.paymentMethod)
-            put(COL_EXP_CLAIMANT, expense.claimant)
-            put(COL_EXP_STATUS, expense.paymentStatus)
-            put(COL_EXP_DESC, expense.description)
-            put(COL_EXP_LOCATION, expense.location)
-            put(COL_EXP_SYNC, expense.lastSyncAt)
-            put(COL_EXP_UPDATED, System.currentTimeMillis())
+        val content = ContentValues().apply {
+            put(FLD_EXP_CODE, exp.expenseId)
+            put(FLD_EXP_DATE, exp.dateOfExpense)
+            put(FLD_EXP_AMOUNT, exp.amount)
+            put(FLD_EXP_CURRENCY, exp.currency)
+            put(FLD_EXP_TYPE, exp.expenseType)
+            put(FLD_EXP_METHOD, exp.paymentMethod)
+            put(FLD_EXP_CLAIMANT, exp.claimant)
+            put(FLD_EXP_STATUS, exp.paymentStatus)
+            put(FLD_EXP_DESC, exp.description)
+            put(FLD_EXP_LOCATION, exp.location)
+            put(FLD_EXP_SYNC, exp.lastSyncAt)
+            put(FLD_EXP_UPDATED, System.currentTimeMillis())
         }
-        return db.update(TABLE_EXPENSES, values, "$COL_EXP_ID = ?", arrayOf(expense.id))
+        return db.update(TBL_EXPENSES, content, "$FLD_EXP_ID = ?", arrayOf(exp.id))
     }
 
-    fun updateExpenseSyncTimestamp(expenseId: String, timestamp: Long) {
+    fun updateExpenseSyncTimestamp(expId: String, time: Long) {
         val db = writableDatabase
-        val values = ContentValues().apply { put(COL_EXP_SYNC, timestamp) }
-        db.update(TABLE_EXPENSES, values, "$COL_EXP_ID = ?", arrayOf(expenseId))
+        val content = ContentValues().apply { put(FLD_EXP_SYNC, time) }
+        db.update(TBL_EXPENSES, content, "$FLD_EXP_ID = ?", arrayOf(expId))
     }
 
-    fun deleteExpense(expenseId: String): Boolean {
+    fun deleteExpense(expId: String): Boolean {
         val db = writableDatabase
-        return db.delete(TABLE_EXPENSES, "$COL_EXP_ID = ?", arrayOf(expenseId)) > 0
+        return db.delete(TBL_EXPENSES, "$FLD_EXP_ID = ?", arrayOf(expId)) > 0
     }
 
-    fun getExpensesByProjectId(projectId: String): List<Expense> {
-        val expenses = mutableListOf<Expense>()
+    fun getExpensesByProjectId(projId: String): List<Expense> {
+        val list = mutableListOf<Expense>()
         val db = readableDatabase
-        val cursor = db.query(TABLE_EXPENSES, null, "$COL_EXP_PROJECT = ?", arrayOf(projectId), null, null, "$COL_EXP_UPDATED DESC")
-        cursor.use { while (it.moveToNext()) expenses.add(cursorToExpense(it)) }
-        return expenses
+        val res = db.query(TBL_EXPENSES, null, "$FLD_EXP_PROJECT = ?", arrayOf(projId), null, null, "$FLD_EXP_UPDATED DESC")
+        res.use { while (it.moveToNext()) list.add(mapToExpense(it)) }
+        return list
     }
 
-    fun getExpenseById(id: String): Expense? {
+    fun getExpenseById(expId: String): Expense? {
         val db = readableDatabase
-        val cursor = db.query(TABLE_EXPENSES, null, "$COL_EXP_ID = ?", arrayOf(id), null, null, null)
-        return cursor.use { if (it.moveToFirst()) cursorToExpense(it) else null }
+        val res = db.query(TBL_EXPENSES, null, "$FLD_EXP_ID = ?", arrayOf(expId), null, null, null)
+        return res.use { if (it.moveToFirst()) mapToExpense(it) else null }
     }
 
-    fun getTotalExpenses(projectId: String): Double {
-        val project = getProjectById(projectId) ?: return 0.0
-        val expenses = getExpensesByProjectId(projectId)
-        var total = 0.0
-        for (expense in expenses) {
-            val convertedAmount = CurrencyConverter.convert(expense.amount, expense.currency, project.currency)
-            total += convertedAmount
+    fun getTotalExpenses(projId: String): Double {
+        val project = getProjectById(projId) ?: return 0.0
+        val expenses = getExpensesByProjectId(projId)
+        var sum = 0.0
+        for (item in expenses) {
+            val converted = CurrencyConverter.convert(item.amount, item.currency, project.currency)
+            sum += converted
         }
-        return total
+        return sum
     }
 
-    private fun cursorToExpense(cursor: Cursor): Expense = Expense(
-        id = cursor.getString(cursor.getColumnIndexOrThrow(COL_EXP_ID)),
-        projectId = cursor.getString(cursor.getColumnIndexOrThrow(COL_EXP_PROJECT)),
-        expenseId = cursor.getString(cursor.getColumnIndexOrThrow(COL_EXP_CODE)),
-        dateOfExpense = cursor.getString(cursor.getColumnIndexOrThrow(COL_EXP_DATE)),
-        amount = cursor.getDouble(cursor.getColumnIndexOrThrow(COL_EXP_AMOUNT)),
-        currency = cursor.getString(cursor.getColumnIndexOrThrow(COL_EXP_CURRENCY)),
-        expenseType = cursor.getString(cursor.getColumnIndexOrThrow(COL_EXP_TYPE)),
-        paymentMethod = cursor.getString(cursor.getColumnIndexOrThrow(COL_EXP_METHOD)),
-        claimant = cursor.getString(cursor.getColumnIndexOrThrow(COL_EXP_CLAIMANT)),
-        paymentStatus = cursor.getString(cursor.getColumnIndexOrThrow(COL_EXP_STATUS)),
-        description = cursor.getString(cursor.getColumnIndexOrThrow(COL_EXP_DESC)) ?: "",
-        location = cursor.getString(cursor.getColumnIndexOrThrow(COL_EXP_LOCATION)) ?: "",
-        lastSyncAt = cursor.getLong(cursor.getColumnIndexOrThrow(COL_EXP_SYNC)),
-        createdAt = cursor.getLong(cursor.getColumnIndexOrThrow(COL_EXP_CREATED)),
-        updatedAt = cursor.getLong(cursor.getColumnIndexOrThrow(COL_EXP_UPDATED))
+    private fun mapToExpense(row: Cursor): Expense = Expense(
+        id = row.getString(row.getColumnIndexOrThrow(FLD_EXP_ID)),
+        projectId = row.getString(row.getColumnIndexOrThrow(FLD_EXP_PROJECT)),
+        expenseId = row.getString(row.getColumnIndexOrThrow(FLD_EXP_CODE)),
+        dateOfExpense = row.getString(row.getColumnIndexOrThrow(FLD_EXP_DATE)),
+        amount = row.getDouble(row.getColumnIndexOrThrow(FLD_EXP_AMOUNT)),
+        currency = row.getString(row.getColumnIndexOrThrow(FLD_EXP_CURRENCY)),
+        expenseType = row.getString(row.getColumnIndexOrThrow(FLD_EXP_TYPE)),
+        paymentMethod = row.getString(row.getColumnIndexOrThrow(FLD_EXP_METHOD)),
+        claimant = row.getString(row.getColumnIndexOrThrow(FLD_EXP_CLAIMANT)),
+        paymentStatus = row.getString(row.getColumnIndexOrThrow(FLD_EXP_STATUS)),
+        description = row.getString(row.getColumnIndexOrThrow(FLD_EXP_DESC)) ?: "",
+        location = row.getString(row.getColumnIndexOrThrow(FLD_EXP_LOCATION)) ?: "",
+        lastSyncAt = row.getLong(row.getColumnIndexOrThrow(FLD_EXP_SYNC)),
+        createdAt = row.getLong(row.getColumnIndexOrThrow(FLD_EXP_CREATED)),
+        updatedAt = row.getLong(row.getColumnIndexOrThrow(FLD_EXP_UPDATED))
     )
 }

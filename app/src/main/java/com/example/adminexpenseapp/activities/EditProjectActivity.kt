@@ -184,13 +184,13 @@ class EditProjectActivity : AppCompatActivity() {
             updatedAt = System.currentTimeMillis()
         )
 
-        // Reduce risk: Fetch Cloud data before committing the update
+
         FirebaseSync.fetchAll(this, object : FirebaseSync.FetchCallback {
             override fun onFetchComplete(newProjects: Int, updatedProjects: Int, deletedLocally: Int) {
                 saveUpdate()
             }
             override fun onFailure(err: String) {
-                saveUpdate() // Save anyway to allow offline editing
+                saveUpdate()
             }
         })
     }

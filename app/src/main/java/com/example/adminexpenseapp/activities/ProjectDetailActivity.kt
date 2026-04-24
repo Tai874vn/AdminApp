@@ -181,7 +181,7 @@ class ProjectDetailActivity : AppCompatActivity() {
         FirebaseSync.deleteProjectsFromCloud(this, listOf(projectId), object : FirebaseSync.SyncCallback {
             override fun onSuccess(projectCount: Int, expenseCount: Int) {
                 Toast.makeText(this@ProjectDetailActivity, "Project deleted from cloud", Toast.LENGTH_SHORT).show()
-                finish() // Close screen and return to MainActivity
+                finish()
             }
             override fun onFailure(err: String) {
                 Toast.makeText(this@ProjectDetailActivity, err, Toast.LENGTH_SHORT).show()
