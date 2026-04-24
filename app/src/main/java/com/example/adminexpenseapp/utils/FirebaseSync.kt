@@ -41,7 +41,7 @@ object FirebaseSync {
         val db = FirebaseFirestore.getInstance()
         val dbHelper = DatabaseHelper.getInstance(context)
         val batch = db.batch()
-        var expenseCount = 0
+        var totalExpensesUploaded = 0
         val syncTime = System.currentTimeMillis()
 
         for (project in projects) {
@@ -54,7 +54,7 @@ object FirebaseSync {
                 expense.lastSyncAt = syncTime
                 val expenseRef = projectRef.collection(COLLECTION_EXPENSES).document(expense.id)
                 batch.set(expenseRef, expense.toMap())
-                expenseCount++
+                totalExpensesUploaded++
             }
         }
 
@@ -66,7 +66,7 @@ object FirebaseSync {
                         dbHelper.updateExpenseSyncTimestamp(it.id, syncTime)
                     }
                 }
-                callback.onSuccess(projects.size, expenseCount)
+                callback.onSuccess(projects.size, totalExpensesUploaded)
             }
             .addOnFailureListener { e -> callback.onFailure("Upload failed: ${e.message}") }
     }
